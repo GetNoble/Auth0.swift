@@ -488,6 +488,9 @@ public protocol Authentication: Trackable, Loggable {
      */
     func webAuth(withConnection connection: String) -> WebAuth
 #endif
+    
+    func startChallenge(withMFAToken mfaToken: String) -> Request<[String: Any], AuthenticationError>
+    func loginWithMFACode(_ mfaToken: String, oobToken: String, code: String) -> Request<Credentials, AuthenticationError>
 }
 
 /**

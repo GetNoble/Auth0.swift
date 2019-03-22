@@ -224,4 +224,28 @@ struct Auth0Authentication: Authentication {
             .connection(connection)
     }
     #endif
+    
+    func startChallenge(withMFAToken mfaToken: String) -> Request<[String: Any], AuthenticationError> {
+        let payload: [String: Any] = [
+            "challenge_type": "otp oob",
+            "mfa_token": mfaToken,
+            "client_id": self.clientId
+        ]
+        let oauthToken = URL(string: "/mfa/challenge", relativeTo: self.url)!
+        
+        return Request(session: session, url: oauthToken, method: "POST", handle: plainJson, payload: payload, logger: self.logger, telemetry: self.telemetry)
+    }
+    
+    func loginWithMFACode(_ mfaToken: String, oobToken: String, code: String) -> Request<Credentials, AuthenticationError> {
+        let url = URL(string: "/oauth/token", relativeTo: self.url)!
+        let payload: [String: Any] = [
+            "oob_code": oobToken,
+            "mfa_token": mfaToken,
+            "grant_type": "http://auth0.com/oauth/grant-type/mfa-oob",
+            "client_id": self.clientId,
+            "binding_code": code,
+        ]
+    
+        return Request(session: session, url: url, method: "POST", handle: authenticationObject, payload: payload, logger: self.logger, telemetry: self.telemetry)
+    }
 }
